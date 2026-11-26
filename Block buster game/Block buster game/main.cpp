@@ -351,7 +351,32 @@ void drawBall(sf::RenderWindow& window)
     window.draw(ball);
 }
 void drawPowerUp(sf::RenderWindow& window) { /* Member B, Saturday (bonus): paste */ }
-void drawHUD(sf::RenderWindow& window) { /* Member C, Wednesday: paste */ }
+void drawHUD(sf::RenderWindow& window)
+{
+    // upar ki 50 px strip
+    sf::RectangleShape strip({ (float)WINDOW_W, (float)HUD_H });
+    strip.setFillColor(COLOR_HUD);
+    strip.setPosition({ 0.f, 0.f });
+    window.draw(strip);
+
+    // score
+    drawText(window, "Score: " + to_string(score), 15.f, 12.f, 22, COLOR_TEXT);
+
+    // lives
+    drawText(window, "Lives:", 420.f, 12.f, 22, COLOR_TEXT);
+    if (lives > 5)
+    {
+        drawText(window, to_string(lives), 495.f, 12.f, 22, COLOR_LIFE);
+        return;
+    }
+    sf::CircleShape life(7.f);
+    life.setFillColor(COLOR_LIFE);
+    for (int i = 0; i < lives; i++)
+    {
+        life.setPosition({ 495.f + i * 20.f, 18.f });
+        window.draw(life);
+    }
+}
 
 // =====================================================================
 // 8) GAME LOGIC  -  TEAM KHUD LIKHEGI (instructions ka rule)
