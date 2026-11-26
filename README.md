@@ -6,9 +6,9 @@ A brick breaker game in C++ with SFML 3 (PF Mini Project).
 
 | Name | Roll number | Features |
 |------|-------------|----------|
-| <Member A name> | <roll no> | Game window and loop, bricks from file, menu and game states |
-| <Member B name> | <roll no> | Paddle and launch, ball movement and bouncing, save and continue, power-ups |
-| <Member C name> | <roll no> | Breaking bricks, lives, score and winning, HUD |
+| Huba Awais | 26L-0545 | Game window and loop, bricks from file, menu and game states |
+| Madeeha Mohsin |26L-0843 | Paddle and launch, ball movement and bouncing, save and continue, power-ups |
+| Areeha Ali | 26L-0532 | Breaking bricks, lives, score and winning, HUD |
 
 ## Controls
 
