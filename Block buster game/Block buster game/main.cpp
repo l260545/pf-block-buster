@@ -402,6 +402,7 @@ bool loadLevel()
                 fin >> bricks[i][j];
         }
     }
+    fin.close();
     return true;   
 }
 
@@ -484,11 +485,35 @@ void launchBall()
     ballLaunched = true;
 }
 
-// Feature 4: do steps mein move. x step -> walls -> hitBricks,
-// y step -> HUD -> hitBricks -> paddle -> neeche gir gayi?
+// Feature 4: 
 void moveBall()
 {
-    // TODO (Member B, Thursday; brick wali lines Friday ko)
+    ballX+= dx;
+    if (ballX < 0 || ballX + BALL_SIZE > WINDOW_W)
+    {
+        ballX -= dx;
+        dx = -dx;
+    }
+    else if (hitBricks() == true)
+    {
+        ballX -= dx;
+        dx = -dx;
+    }
+    ballY += dy;
+    if (ballY < HUD_H)
+    {
+        ballY -= dy;
+        dy = -dy;
+    }
+    else if (hitBricks() == true)
+    {
+        ballY -= dy;
+        dy = -dy;
+    }
+    else
+        bounceOnPaddle();
+    if (ballY > WINDOW_H)
+        loseLife();
 }
 
 // Feature 4: paddle se takrayi (sirf neeche jaate hue) -> true
@@ -531,19 +556,55 @@ void updatePowerUp()
 
 // ----------------------------- MEMBER C -----------------------------
 
-// Feature 5: corner brick area ke andar hai? (cy >= 100, cy < 300, cx >= 0, cx < 600)
+// Feature 5: corner brick area ke andar hai? 
 bool cornerInBrickArea(int cx, int cy)
 {
-    // TODO (Member C, Wednesday)
+    if (cy >= BRICKS_Y && cy < BRICKS_Y + ROWS * BRICK_H && cx >= 0 && cx < WINDOW_W)
+        return true;
+    else
     return false;
 }
 
-// Feature 5: ball ke 4 corners -> row/col -> bricks ko 1 hit, points.
-// Return: true agar koi brick touch hui (moveBall phir bounce karega)
+// Feature 5:
 bool hitBricks()
 {
-    // TODO (Member C, Thursday)
-    return false;
+    int cornerX[4] = { ballX,ballX + BALL_SIZE - 1,ballX,ballX + BALL_SIZE - 1 };
+    int cornerY[4] = { ballY,ballY,ballY + BALL_SIZE - 1,ballY + BALL_SIZE - 1 };
+    int hitRow[4], hitCol[4], hitcount = 0;
+    for (int i = 0;i < 4;i++)
+    {
+        if (cornerInBrickArea(cornerX[i], cornerY[i]) == false)
+            continue;
+        int row = (cornerY[i] - BRICKS_Y) / BRICK_H;
+        int col = cornerX[i] / BRICK_W;
+        if (bricks[row][col] == 0)
+            continue;
+        bool alreadyInList = false;
+        for (int j = 0;j < hitcount;j++)
+        {
+            if (hitRow[j] == row && hitCol[j] == col)
+                alreadyInList = true;
+        }
+        if (alreadyInList == false)
+        {
+            hitRow[hitcount] = row;
+            hitCol[hitcount] = col;
+            hitcount++;
+        }
+    } 
+    for (int k = 0;k < hitcount;k++)
+    {
+        bricks[hitRow[k]][hitCol[k]]--;
+        if (bricks[hitRow[k]][hitCol[k]]==0)
+        {
+            score += POINTS_BREAK;
+            tryDropPowerUp(hitRow[k], hitCol[k]);
+        }
+        else
+            score += POINTS_HIT;
+
+    }
+    return hitcount>0;
 }
 
 // Feature 6: ball neeche gir gayi -> ek life kam, ball wapas paddle pe
