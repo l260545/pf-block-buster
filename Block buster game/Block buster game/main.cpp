@@ -335,8 +335,21 @@ void drawErrorScreen(sf::RenderWindow& window)
 }
 void drawMenu(sf::RenderWindow& window) { /* Member A, Thursday: paste */ }
 void drawEndScreen(sf::RenderWindow& window) { /* Member A, Friday: paste */ }
-void drawPaddle(sf::RenderWindow& window) { /* Member B, Wednesday: paste */ }
-void drawBall(sf::RenderWindow& window) { /* Member B, Wednesday: paste */ }
+void drawPaddle(sf::RenderWindow& window)
+{
+    // paddleWidth use kiya (100 ya power-up mein 150)
+    sf::RectangleShape paddle({ (float)paddleWidth, (float)PADDLE_H });
+    paddle.setFillColor(COLOR_PADDLE);
+    paddle.setPosition({ (float)paddleX, (float)PADDLE_Y });
+    window.draw(paddle);
+}
+void drawBall(sf::RenderWindow& window)
+{
+    sf::CircleShape ball(BALL_SIZE / 2.f);   // radius 6 -> 12 x 12 box
+    ball.setFillColor(COLOR_BALL);
+    ball.setPosition({ (float)ballX, (float)ballY }); // box ka top-left corner
+    window.draw(ball);
+}
 void drawPowerUp(sf::RenderWindow& window) { /* Member B, Saturday (bonus): paste */ }
 void drawHUD(sf::RenderWindow& window) { /* Member C, Wednesday: paste */ }
 
@@ -348,7 +361,7 @@ void drawHUD(sf::RenderWindow& window) { /* Member C, Wednesday: paste */ }
 // ----------------------------- MEMBER A -----------------------------
 
 // Feature 2: level.txt ko bricks[8][10] mein parhna.
-// Return: true = file mil gayi, false = file nahi mili
+
 bool loadLevel()
 {
     ifstream fin("level.txt");
@@ -370,10 +383,16 @@ bool loadLevel()
 // Feature 7: New Game hamesha fresh start
 void startNewGame()
 {
-    // TODO (Member A, Thursday):
-    // score = 0, lives = START_LIVES, bricks dobara loadLevel() se,
-    // paddleX = PADDLE_START_X, paddleWidth = PADDLE_W, wideTimer = 0,
-    // powerUpFalling = false, resetBallOnPaddle(), gameState = PLAYING
+    score = 0;
+    lives = START_LIVES;  
+    levelLoaded = loadLevel();    // taake bricks file se dobara aayen.    
+    paddleX = PADDLE_START_X;
+    paddleWidth = PADDLE_W;
+    powerUpFalling = false;
+    ballLaunched = false;
+    resetBallOnPaddle();
+    wideTimer = 0;
+    gameState = PLAYING;
 }
 
 // Feature 7: menu ke keys (code: sfml_parts_to_paste.cpp)
@@ -409,20 +428,35 @@ void updatePlaying()
 // Feature 3: paddle 8 px left/right, window se bahar nahi
 void movePaddle()
 {
-    // TODO (Member B, Wednesday)
+    if (leftHeld == true)
+        paddleX -= PADDLE_SPEED;
+    if (rightHeld == true)
+       paddleX+= PADDLE_SPEED;
+    if (paddleX < 0)             // paddle ko window ke andar rakho
+        paddleX = 0;
+    if (paddleX + paddleWidth > WINDOW_W)          // paddle ko window ke andar rakho
+        paddleX = WINDOW_W - paddleWidth;
 }
 
-// Feature 3: ball paddle ke beech mein: ballX = paddleX + 44, ballY = 638
-// (44 = (100 - 12) / 2. Wide paddle pe bhi beech: (paddleWidth - BALL_SIZE) / 2)
+// Feature 3: 
+
 void resetBallOnPaddle()
 {
-    // TODO (Member B, Wednesday)
+    ballX = paddleX + (paddleWidth - BALL_SIZE) / 2;
+    ballY = BALL_ON_PADDLE_Y;
 }
 
-// Feature 3: Space -> dy = -5, dx = 3 ya -3 (rand() % 2)
+// Feature 3: 
 void launchBall()
 {
-    // TODO (Member B, Wednesday)
+    dy = -BALL_SPEED_Y;
+    if (rand() % 2 == 0)
+    {
+        dx = 3;          // thora right
+    }
+    else
+        dx = -3;          //thora left
+    ballLaunched = true;
 }
 
 // Feature 4: do steps mein move. x step -> walls -> hitBricks,
