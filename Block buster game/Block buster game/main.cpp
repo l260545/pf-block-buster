@@ -1,14 +1,6 @@
 // =====================================================================
 //  BLOCK BUSTER  -  PF Mini Project  (C++ + SFML 3)
-//  Team: <Member A name>, <Member B name>, <Member C name>
-//
-//  Ye file Wednesday ka STARTER hai (Member A commit karega).
-//  - SFML wala code (window, loop, keys, text) already likha hua hai.
-//  - Har GAME LOGIC function abhi khaali hai: "TODO" comments mein
-//    likha hai ke kya karna hai. Woh har member khud likhega.
-//  - Drawing functions bhi khaali hain; unka SFML code
-//    "sfml_parts_to_paste.cpp" mein hai, apne din pe paste karna.
-//  - Menu (updateMenu, updateGameOver) ka code bhi wahin hai.
+//  Team: Huba Awais, Madeeha Mohsin , Areeha Ali 
 // =====================================================================
 
 #include <SFML/Graphics.hpp>
@@ -141,7 +133,7 @@ void drawText(sf::RenderWindow& window, const string& message, float x, float y,
 void drawTextCentered(sf::RenderWindow& window, const string& message, float y, unsigned int size, sf::Color color);
 
 // Drawing + menu (code: sfml_parts_to_paste.cpp)
-void drawBricks(sf::RenderWindow& window);      // Member A
+void drawBricks(sf::RenderWindow& window);
 void drawErrorScreen(sf::RenderWindow& window); // Member A
 void drawMenu(sf::RenderWindow& window);        // Member A
 void drawEndScreen(sf::RenderWindow& window);   // Member A
@@ -313,8 +305,34 @@ void drawTextCentered(sf::RenderWindow& window, const string& message, float y, 
 // =====================================================================
 // 7) DRAWING  -  code "sfml_parts_to_paste.cpp" se apne din pe paste karo
 // =====================================================================
-void drawBricks(sf::RenderWindow& window) { /* Member A, Wednesday: paste */ }
-void drawErrorScreen(sf::RenderWindow& window) { /* Member A, Wednesday: paste */ }
+void drawBricks(sf::RenderWindow& window)
+{
+    // Ek hi rectangle banao, har brick pe uska colour aur jagah badlo.
+    // 2 pixel chhota, taake bricks ke beech gap nazar aaye.
+    sf::RectangleShape brick({ BRICK_W - 2.f, BRICK_H - 2.f });
+
+    for (int r = 0; r < ROWS; r++)
+    {
+        for (int c = 0; c < COLS; c++)
+        {
+            int hitsLeft = bricks[r][c];
+            if (hitsLeft <= 0 || hitsLeft > 3)   // 0 = brick nahi hai
+                continue;
+
+            brick.setFillColor(BRICK_COLORS[hitsLeft]);        // hits ke hisaab se colour
+            brick.setPosition({ (float)(c * BRICK_W + 1),        // x = c * 60 (+1 gap)
+                               (float)(BRICKS_Y + r * BRICK_H + 1) }); // y = 100 + r * 25
+            window.draw(brick);
+        }
+    }
+}
+void drawErrorScreen(sf::RenderWindow& window)
+{
+    drawTextCentered(window, "ERROR", 260.f, 48, COLOR_WARNING);
+    drawTextCentered(window, "level.txt was not found.", 340.f, 22, COLOR_TEXT);
+    drawTextCentered(window, "Put level.txt next to main.cpp", 380.f, 18, COLOR_TEXT);
+    drawTextCentered(window, "and run the game again.", 405.f, 18, COLOR_TEXT);
+}
 void drawMenu(sf::RenderWindow& window) { /* Member A, Thursday: paste */ }
 void drawEndScreen(sf::RenderWindow& window) { /* Member A, Friday: paste */ }
 void drawPaddle(sf::RenderWindow& window) { /* Member B, Wednesday: paste */ }
@@ -333,13 +351,20 @@ void drawHUD(sf::RenderWindow& window) { /* Member C, Wednesday: paste */ }
 // Return: true = file mil gayi, false = file nahi mili
 bool loadLevel()
 {
-    // TODO (Member A, Wednesday):
-    // 1. ifstream fin("level.txt");
-    // 2. file nahi khuli?  -> return false
-    // 3. pehle do numbers parho (rows, cols)
-    // 4. do nested loops (r = 0..ROWS-1, c = 0..COLS-1): fin >> bricks[r][c]
-    // 5. file band karo, return true
-    return true;   // <- TEMPORARY taake starter chal jaye; apna code likh ke hatao
+    ifstream fin("level.txt");
+    if (!fin)
+        return false;
+    else
+    {
+        int rows, col;
+        fin >> rows >> col;
+        for (int i = 0;i < rows;i++)
+        {
+            for (int j = 0;j < col;j++)
+                fin >> bricks[i][j];
+        }
+    }
+    return true;   
 }
 
 // Feature 7: New Game hamesha fresh start
@@ -360,14 +385,23 @@ void updateGameOver() { /* Member A, Friday: paste */ }
 // PLAYING state har frame: functions ko sahi order mein call karna
 void updatePlaying()
 {
-    // TODO (Member A, Wednesday) - order:
-    // 1. KEY_ESCAPE -> saveGame(), gameState = MENU, return   (Member B ka function)
-    // 2. movePaddle()
-    // 3. ball launch nahi hui: resetBallOnPaddle() (ball paddle ke saath chale),
-    //    aur KEY_LAUNCH -> launchBall()
-    //    ball launch ho chuki: moveBall()
-    // 4. updatePowerUp()   (bonus)
-    // 5. checkWinOrLose()
+    if (pressedKey == KEY_ESCAPE)
+    {
+        saveGame();         // Esc: game save kar ke menu pe jao
+        gameState = MENU;
+        return;
+  }
+    movePaddle();
+    if (ballLaunched == false)           // Ball abhi paddle pe hai: paddle ke saath chalao, Space pe launch
+    {
+        resetBallOnPaddle();
+        if (pressedKey == KEY_LAUNCH)
+            launchBall();
+    }
+    else
+        moveBall();          // Ball chal rahi hai
+    updatePowerUp();
+    checkWinOrLose();
 }
 
 // ----------------------------- MEMBER B -----------------------------
