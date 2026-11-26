@@ -1,0 +1,466 @@
+// =====================================================================
+//  BLOCK BUSTER  -  PF Mini Project  (C++ + SFML 3)
+//  Team: <Member A name>, <Member B name>, <Member C name>
+//
+//  Ye file Wednesday ka STARTER hai (Member A commit karega).
+//  - SFML wala code (window, loop, keys, text) already likha hua hai.
+//  - Har GAME LOGIC function abhi khaali hai: "TODO" comments mein
+//    likha hai ke kya karna hai. Woh har member khud likhega.
+//  - Drawing functions bhi khaali hain; unka SFML code
+//    "sfml_parts_to_paste.cpp" mein hai, apne din pe paste karna.
+//  - Menu (updateMenu, updateGameOver) ka code bhi wahin hai.
+// =====================================================================
+
+#include <SFML/Graphics.hpp>
+#include <fstream>
+#include <string>
+#include <cstdlib>   // rand, srand
+#include <ctime>     // time
+#include <optional>
+using namespace std;
+
+// ---------------------------------------------------------------------
+// 1) NAMED CONSTANTS  (Feature 10: no magic numbers)
+//    Values "Game values" table se li hain.
+// ---------------------------------------------------------------------
+const int WINDOW_W = 600;
+const int WINDOW_H = 700;
+const int HUD_H = 50;          // upar wali score/lives strip
+
+const int ROWS = 8;           // bricks ki rows
+const int COLS = 10;          // bricks ke columns
+const int BRICK_W = 60;
+const int BRICK_H = 25;
+const int BRICKS_Y = 100;         // bricks y = 100 se shuru
+
+const int PADDLE_W = 100;   // normal paddle width
+const int PADDLE_WIDE_W = 150;   // power-up "W" wali width
+const int PADDLE_H = 14;
+const int PADDLE_Y = 650;   // paddle ka top edge
+const int PADDLE_START_X = 250;
+const int PADDLE_SPEED = 8;     // pixels har frame
+
+const int BALL_SIZE = 12;  // ball ka box 12 x 12
+const int BALL_ON_PADDLE_Y = 638; // paddle ke bilkul upar (650 - 12)
+const int BALL_SPEED_Y = 5;   // dy = 5 ya -5
+
+const int START_LIVES = 3;
+const int POINTS_HIT = 10;      // brick ko hit kiya
+const int POINTS_BREAK = 50;      // hit se brick toot gayi
+
+const int POWERUP_W = 24;     // girne wala power-up box
+const int POWERUP_H = 12;
+const int POWERUP_SPEED = 3;      // 3 pixels har frame
+const int WIDE_FRAMES = 600;    // 10 seconds x 60 frames
+
+// Game states (Feature 7)
+const int MENU = 0;
+const int PLAYING = 1;
+const int GAME_OVER = 2;          // game over YA you win (playerWon batata hai)
+
+// Ek-baar-press wali keys (event loop se aati hain)
+const int NO_KEY = 0;
+const int KEY_LAUNCH = 1;         // Space
+const int KEY_ENTER = 2;
+const int KEY_ESCAPE = 3;
+const int KEY_UP = 4;
+const int KEY_DOWN = 5;
+
+// Menu options (order: New Game, Continue, Exit)
+const int OPTION_NEW_GAME = 0;
+const int OPTION_CONTINUE = 1;
+const int OPTION_EXIT = 2;
+const int MENU_OPTIONS = 3;
+
+// ---------------------------------------------------------------------
+// 2) COLOURS  - sirf yahan change karo, poori game ka look badal jayega
+//    sf::Color(red, green, blue)  har value 0 se 255
+// ---------------------------------------------------------------------
+const sf::Color COLOR_BACKGROUND(16, 20, 45);     // dark navy
+const sf::Color COLOR_HUD(28, 33, 70);     // HUD strip
+const sf::Color COLOR_TEXT(235, 235, 245);  // normal text
+const sf::Color COLOR_HIGHLIGHT(70, 225, 255);   // selected menu option
+const sf::Color COLOR_WARNING(255, 85, 110);   // error / "No saved game"
+const sf::Color COLOR_PADDLE(70, 225, 255);   // cyan paddle
+const sf::Color COLOR_BALL(255, 255, 255);  // white ball
+const sf::Color COLOR_LIFE(255, 85, 110);   // lives ke circles
+
+// index = hits left:  0 = no brick, 1 = green, 2 = yellow, 3 = red
+const sf::Color BRICK_COLORS[4] = {
+    sf::Color(25, 25, 45),     // 0: no brick (draw nahi hoti)
+    sf::Color(60, 220, 150),   // 1: one hit left   (green)
+    sf::Color(255, 210, 60),   // 2: two hits left  (yellow)
+    sf::Color(255, 85, 110)    // 3: three hits left (red)
+};
+
+// ---------------------------------------------------------------------
+// 3) GAME VARIABLES  (poori game ki "state")
+// ---------------------------------------------------------------------
+int bricks[ROWS][COLS];       // level.txt se aati hain
+
+int  gameState = PLAYING;   // TEMPORARY testing ke liye. Thursday ko menu aane pe MENU karo
+int  menuChoice = OPTION_NEW_GAME;  // menu mein kaunsa option selected hai
+bool showNoSave = false;            // "No saved game" dikhana hai?
+bool levelLoaded = false;            // level.txt mila ya nahi
+bool playerWon = false;            // GAME_OVER screen: true = YOU WIN
+
+int score = 0;
+int lives = START_LIVES;
+
+int paddleX = PADDLE_START_X;
+int paddleWidth = PADDLE_W;
+
+int  ballX = 0, ballY = 0;    // ball ke box ka top-left corner
+int  dx = 0, dy = 0;          // ball ki speed (x aur y mein)
+bool ballLaunched = false;    // false = ball paddle pe ruki hai
+
+// Bonus power-up
+bool powerUpFalling = false;
+int  powerUpX = 0, powerUpY = 0;
+char powerUpType = 'W';       // 'W' = wide paddle, '+' = extra life
+int  wideTimer = 0;           // kitne frames wide paddle baqi hai
+
+// Input
+int  pressedKey = NO_KEY;     // is frame mein kaunsi key ek dafa press hui
+bool leftHeld = false;       // Left ya A dabi hui hai?
+bool rightHeld = false;       // Right ya D dabi hui hai?
+
+// Text ke liye font
+sf::Font font;
+bool fontLoaded = false;
+
+// ---------------------------------------------------------------------
+// 4) FUNCTION LIST  (prototypes) - har function ek kaam karta hai
+// ---------------------------------------------------------------------
+// SFML / setup
+bool loadFont();
+void handleInput(sf::RenderWindow& window);
+void updateGame(sf::RenderWindow& window);
+void drawGame(sf::RenderWindow& window);
+void drawText(sf::RenderWindow& window, const string& message, float x, float y, unsigned int size, sf::Color color);
+void drawTextCentered(sf::RenderWindow& window, const string& message, float y, unsigned int size, sf::Color color);
+
+// Drawing + menu (code: sfml_parts_to_paste.cpp)
+void drawBricks(sf::RenderWindow& window);      // Member A
+void drawErrorScreen(sf::RenderWindow& window); // Member A
+void drawMenu(sf::RenderWindow& window);        // Member A
+void drawEndScreen(sf::RenderWindow& window);   // Member A
+void drawPaddle(sf::RenderWindow& window);      // Member B
+void drawBall(sf::RenderWindow& window);        // Member B
+void drawPowerUp(sf::RenderWindow& window);     // Member B
+void drawHUD(sf::RenderWindow& window);         // Member C
+
+// Game logic (team khud likhegi)
+bool loadLevel();                               // Member A
+void startNewGame();                            // Member A
+void updateMenu(sf::RenderWindow& window);      // Member A (paste)
+void updateGameOver();                          // Member A (paste)
+void updatePlaying();                           // Member A (sirf order of calls)
+void movePaddle();                              // Member B
+void resetBallOnPaddle();                       // Member B
+void launchBall();                              // Member B
+void moveBall();                                // Member B
+bool bounceOnPaddle();                          // Member B
+void saveGame();                                // Member B
+bool loadSavedGame();                           // Member B
+void clearSave();                               // Member B
+void tryDropPowerUp(int row, int col);          // Member B (bonus)
+void updatePowerUp();                           // Member B (bonus)
+bool cornerInBrickArea(int cx, int cy);         // Member C
+bool hitBricks();                               // Member C
+void loseLife();                                // Member C
+void checkWinOrLose();                          // Member C
+
+// =====================================================================
+// 5) MAIN  -  chhota rakho (Feature 10)
+// =====================================================================
+int main()
+{
+    srand((unsigned)time(0));   // har dafa alag random numbers
+
+    sf::RenderWindow window(sf::VideoMode({ (unsigned)WINDOW_W, (unsigned)WINDOW_H }), "Block Buster");
+    window.setFramerateLimit(60);   // har laptop pe same speed
+
+    fontLoaded = loadFont();
+    levelLoaded = loadLevel();      // file nahi mili to error screen dikhegi
+
+    // GAME LOOP (Feature 1): input -> update -> draw, 60 dafa har second
+    while (window.isOpen())
+    {
+        handleInput(window);
+        updateGame(window);
+        drawGame(window);
+    }
+    return 0;
+}
+
+// =====================================================================
+// 6) SFML PART  -  setup, input, loop (AI se allowed)
+// =====================================================================
+
+// Font load karo. Pehle project folder dekho, phir Windows ka Arial.
+bool loadFont()
+{
+    if (font.openFromFile("arial.ttf"))
+        return true;
+    if (font.openFromFile("C:/Windows/Fonts/arial.ttf"))
+        return true;
+    return false;
+}
+
+// INPUT: keys aur window events parhna. Yahan sirf "kaunsi key" save hoti
+// hai; us key se kya hoga woh update functions decide karte hain.
+void handleInput(sf::RenderWindow& window)
+{
+    pressedKey = NO_KEY;   // har frame naye sire se
+
+    // Ek-baar-press wali keys + window ka X button
+    while (const std::optional event = window.pollEvent())
+    {
+        if (event->is<sf::Event::Closed>())
+        {
+            window.close();
+        }
+        else if (const auto* key = event->getIf<sf::Event::KeyPressed>())
+        {
+            if (key->code == sf::Keyboard::Key::Space)       pressedKey = KEY_LAUNCH;
+            else if (key->code == sf::Keyboard::Key::Enter)  pressedKey = KEY_ENTER;
+            else if (key->code == sf::Keyboard::Key::Escape) pressedKey = KEY_ESCAPE;
+            else if (key->code == sf::Keyboard::Key::Up)     pressedKey = KEY_UP;
+            else if (key->code == sf::Keyboard::Key::Down)   pressedKey = KEY_DOWN;
+        }
+    }
+
+    // Dabi hui keys (paddle ke liye): har frame seedha check
+    leftHeld = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) ||
+        sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A);
+    rightHeld = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) ||
+        sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D);
+}
+
+// UPDATE: har state sirf apna kaam karti hai (switch-case, Feature 7)
+void updateGame(sf::RenderWindow& window)
+{
+    if (!levelLoaded)        // level.txt nahi mili: kuch update nahi karna
+        return;
+
+    switch (gameState)
+    {
+    case MENU:      updateMenu(window); break;
+    case PLAYING:   updatePlaying();    break;
+    case GAME_OVER: updateGameOver();   break;
+    }
+}
+
+// DRAW: clear -> sab draw -> display
+void drawGame(sf::RenderWindow& window)
+{
+    if (!window.isOpen())
+        return;
+
+    window.clear(COLOR_BACKGROUND);
+
+    if (!levelLoaded)
+    {
+        drawErrorScreen(window);
+    }
+    else
+    {
+        switch (gameState)
+        {
+        case MENU:
+            drawMenu(window);
+            break;
+        case PLAYING:
+            drawHUD(window);
+            drawBricks(window);
+            drawPaddle(window);
+            drawBall(window);
+            drawPowerUp(window);
+            break;
+        case GAME_OVER:
+            drawEndScreen(window);
+            break;
+        }
+    }
+
+    window.display();
+}
+
+// Text likhne ka helper: (x, y) pe message
+void drawText(sf::RenderWindow& window, const string& message, float x, float y, unsigned int size, sf::Color color)
+{
+    if (!fontLoaded)
+        return;
+    sf::Text text(font, message, size);
+    text.setFillColor(color);
+    text.setPosition({ x, y });
+    window.draw(text);
+}
+
+// Text ko screen ke beech (horizontally) mein likhna
+void drawTextCentered(sf::RenderWindow& window, const string& message, float y, unsigned int size, sf::Color color)
+{
+    if (!fontLoaded)
+        return;
+    sf::Text text(font, message, size);
+    text.setFillColor(color);
+    float width = text.getLocalBounds().size.x;
+    text.setPosition({ (WINDOW_W - width) / 2.f, y });
+    window.draw(text);
+}
+
+// =====================================================================
+// 7) DRAWING  -  code "sfml_parts_to_paste.cpp" se apne din pe paste karo
+// =====================================================================
+void drawBricks(sf::RenderWindow& window) { /* Member A, Wednesday: paste */ }
+void drawErrorScreen(sf::RenderWindow& window) { /* Member A, Wednesday: paste */ }
+void drawMenu(sf::RenderWindow& window) { /* Member A, Thursday: paste */ }
+void drawEndScreen(sf::RenderWindow& window) { /* Member A, Friday: paste */ }
+void drawPaddle(sf::RenderWindow& window) { /* Member B, Wednesday: paste */ }
+void drawBall(sf::RenderWindow& window) { /* Member B, Wednesday: paste */ }
+void drawPowerUp(sf::RenderWindow& window) { /* Member B, Saturday (bonus): paste */ }
+void drawHUD(sf::RenderWindow& window) { /* Member C, Wednesday: paste */ }
+
+// =====================================================================
+// 8) GAME LOGIC  -  TEAM KHUD LIKHEGI (instructions ka rule)
+//    Har TODO ke steps guide doc mein detail se hain.
+// =====================================================================
+
+// ----------------------------- MEMBER A -----------------------------
+
+// Feature 2: level.txt ko bricks[8][10] mein parhna.
+// Return: true = file mil gayi, false = file nahi mili
+bool loadLevel()
+{
+    // TODO (Member A, Wednesday):
+    // 1. ifstream fin("level.txt");
+    // 2. file nahi khuli?  -> return false
+    // 3. pehle do numbers parho (rows, cols)
+    // 4. do nested loops (r = 0..ROWS-1, c = 0..COLS-1): fin >> bricks[r][c]
+    // 5. file band karo, return true
+    return true;   // <- TEMPORARY taake starter chal jaye; apna code likh ke hatao
+}
+
+// Feature 7: New Game hamesha fresh start
+void startNewGame()
+{
+    // TODO (Member A, Thursday):
+    // score = 0, lives = START_LIVES, bricks dobara loadLevel() se,
+    // paddleX = PADDLE_START_X, paddleWidth = PADDLE_W, wideTimer = 0,
+    // powerUpFalling = false, resetBallOnPaddle(), gameState = PLAYING
+}
+
+// Feature 7: menu ke keys (code: sfml_parts_to_paste.cpp)
+void updateMenu(sf::RenderWindow& window) { /* Member A, Thursday: paste */ }
+
+// Feature 7: Enter -> menu (code: sfml_parts_to_paste.cpp)
+void updateGameOver() { /* Member A, Friday: paste */ }
+
+// PLAYING state har frame: functions ko sahi order mein call karna
+void updatePlaying()
+{
+    // TODO (Member A, Wednesday) - order:
+    // 1. KEY_ESCAPE -> saveGame(), gameState = MENU, return   (Member B ka function)
+    // 2. movePaddle()
+    // 3. ball launch nahi hui: resetBallOnPaddle() (ball paddle ke saath chale),
+    //    aur KEY_LAUNCH -> launchBall()
+    //    ball launch ho chuki: moveBall()
+    // 4. updatePowerUp()   (bonus)
+    // 5. checkWinOrLose()
+}
+
+// ----------------------------- MEMBER B -----------------------------
+
+// Feature 3: paddle 8 px left/right, window se bahar nahi
+void movePaddle()
+{
+    // TODO (Member B, Wednesday)
+}
+
+// Feature 3: ball paddle ke beech mein: ballX = paddleX + 44, ballY = 638
+// (44 = (100 - 12) / 2. Wide paddle pe bhi beech: (paddleWidth - BALL_SIZE) / 2)
+void resetBallOnPaddle()
+{
+    // TODO (Member B, Wednesday)
+}
+
+// Feature 3: Space -> dy = -5, dx = 3 ya -3 (rand() % 2)
+void launchBall()
+{
+    // TODO (Member B, Wednesday)
+}
+
+// Feature 4: do steps mein move. x step -> walls -> hitBricks,
+// y step -> HUD -> hitBricks -> paddle -> neeche gir gayi?
+void moveBall()
+{
+    // TODO (Member B, Thursday; brick wali lines Friday ko)
+}
+
+// Feature 4: paddle se takrayi (sirf neeche jaate hue) -> true
+bool bounceOnPaddle()
+{
+    // TODO (Member B, Thursday)
+    return false;
+}
+
+// Feature 8: score, lives aur 8 rows savegame.txt mein
+void saveGame()
+{
+    // TODO (Member B, Friday)
+}
+
+// Feature 8: savegame.txt parhna. Kuch nahi mila -> false
+bool loadSavedGame()
+{
+    // TODO (Member B, Friday)
+    return false;
+}
+
+// Feature 8: savegame.txt khaali karna (ofstream khol ke band)
+void clearSave()
+{
+    // TODO (Member B, Friday)
+}
+
+// Bonus: brick tooti -> 1 in 5 chance power-up gire
+void tryDropPowerUp(int row, int col)
+{
+    // TODO (Member B, Saturday, bonus)
+}
+
+// Bonus: power-up girna, catch karna, wide timer chalana
+void updatePowerUp()
+{
+    // TODO (Member B, Saturday, bonus)
+}
+
+// ----------------------------- MEMBER C -----------------------------
+
+// Feature 5: corner brick area ke andar hai? (cy >= 100, cy < 300, cx >= 0, cx < 600)
+bool cornerInBrickArea(int cx, int cy)
+{
+    // TODO (Member C, Wednesday)
+    return false;
+}
+
+// Feature 5: ball ke 4 corners -> row/col -> bricks ko 1 hit, points.
+// Return: true agar koi brick touch hui (moveBall phir bounce karega)
+bool hitBricks()
+{
+    // TODO (Member C, Thursday)
+    return false;
+}
+
+// Feature 6: ball neeche gir gayi -> ek life kam, ball wapas paddle pe
+void loseLife()
+{
+    // TODO (Member C, Friday)
+}
+
+// Feature 6: saari bricks 0 -> YOU WIN; lives 0 -> GAME OVER
+void checkWinOrLose()
+{
+    // TODO (Member C, Friday)
+}

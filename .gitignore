@@ -421,6 +421,6 @@ FodyWeavers.xsd
 *.msixbundle
 *.msm
 *.msp
-
+savegame.txt
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
