@@ -440,8 +440,50 @@ void startNewGame()
     gameState = PLAYING;
 }
 
-// Feature 7: menu ke keys (code: sfml_parts_to_paste.cpp)
-void updateMenu(sf::RenderWindow& window) { /* Member A, Thursday: paste */ }
+// Feature 7: menu ke keys 
+void updateMenu(sf::RenderWindow& window)
+{
+    if (pressedKey == KEY_UP)
+    {
+        menuChoice--;
+        if (menuChoice < 0)                       // sab se upar wale se upar nahi
+            menuChoice = 0;
+        showNoSave = false;
+    }
+    else if (pressedKey == KEY_DOWN)
+    {
+        menuChoice++;
+        if (menuChoice > MENU_OPTIONS - 1)        // Exit se neeche nahi
+            menuChoice = MENU_OPTIONS - 1;
+        showNoSave = false;
+    }
+    else if (pressedKey == KEY_ENTER)
+    {
+        switch (menuChoice)
+        {
+        case OPTION_NEW_GAME:
+            showNoSave = false;
+            startNewGame();                       // score 0, 3 lives, fresh bricks, PLAYING
+            break;
+
+        case OPTION_CONTINUE:
+            if (loadSavedGame())                  // save mila aur parh liya
+            {
+                showNoSave = false;
+                gameState = PLAYING;
+            }
+            else                                  // koi save nahi
+            {
+                showNoSave = true;
+            }
+            break;
+
+        case OPTION_EXIT:
+            window.close();                       // game band
+            break;
+        }
+    }
+}
 
 // Feature 7: Enter -> menu (code: sfml_parts_to_paste.cpp)
 void updateGameOver() { /* Member A, Friday: paste */ }
