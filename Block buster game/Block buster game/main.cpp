@@ -353,7 +353,16 @@ void drawMenu(sf::RenderWindow& window)
 
     drawTextCentered(window, "Up/Down to choose, Enter to select", 630.f, 16, COLOR_TEXT);
 }
-void drawEndScreen(sf::RenderWindow& window) { /* Member A, Friday: paste */ }
+void drawEndScreen(sf::RenderWindow& window)
+{
+    if (playerWon)
+        drawTextCentered(window, "YOU WIN", 230.f, 60, BRICK_COLORS[1]);
+    else
+        drawTextCentered(window, "GAME OVER", 230.f, 60, COLOR_WARNING);
+
+    drawTextCentered(window, "Final score: " + to_string(score), 340.f, 30, COLOR_TEXT);
+    drawTextCentered(window, "Press Enter", 430.f, 24, COLOR_HIGHLIGHT);
+}
 void drawPaddle(sf::RenderWindow& window)
 {
     // paddleWidth use kiya (100 ya power-up mein 150)
@@ -485,8 +494,17 @@ void updateMenu(sf::RenderWindow& window)
     }
 }
 
-// Feature 7: Enter -> menu (code: sfml_parts_to_paste.cpp)
-void updateGameOver() { /* Member A, Friday: paste */ }
+// Feature 7: Enter -> menu 
+void updateGameOver()
+{
+    if (pressedKey == KEY_ENTER)
+    {
+        clearSave();                    // khatam game continue na ho sake (Feature 8)
+        menuChoice = OPTION_NEW_GAME;   // menu "New Game" pe khule
+        showNoSave = false;
+        gameState = MENU;
+    }
+}
 
 // PLAYING state har frame: functions ko sahi order mein call karna
 void updatePlaying()
