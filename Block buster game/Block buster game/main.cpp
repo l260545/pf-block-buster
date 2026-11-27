@@ -691,10 +691,50 @@ bool hitBricks()
 void loseLife()
 {
     // TODO (Member C, Friday)
+    lives--; // 1 life kam
+    ballLaunched = false; // ball ruk jaye
+    dx = 0;
+    dy = 0;
+    if (lives <= 0)
+    {
+     // Sari lives khatam -> GAME OVER, jeete nahi
+     playerWon = false;
+     gameState = GAME_OVER;
+     }
+    else
+     {
+     // Life bachi hai -> ball wapas paddle pe
+     resetBallOnPaddle();
+     }
 }
 
 // Feature 6: saari bricks 0 -> YOU WIN; lives 0 -> GAME OVER
 void checkWinOrLose()
 {
-    // TODO (Member C, Friday)
+ // TODO (Member C, Friday)
+ // 1. Pehle check karo: kya sari bricks toot gayi?
+ bool allBricksGone = true;
+for (int r = 0; r < ROWS; r++)
+{
+    for (int c = 0; c < COLS; c++)
+    {
+    if (bricks[r][c] > 0)
+        {
+            allBricksGone = false;
+        }
+    }
+}
+
+if (allBricksGone == true)
+{
+    playerWon = true; // YOU WIN
+    gameState = GAME_OVER;
+    return;
+}
+// 2. Kya lives khatam ho gayi?
+if (lives <= 0)
+    {
+        playerWon = false; // GAME OVER
+        gameState = GAME_OVER;
+    }
 }
