@@ -333,7 +333,26 @@ void drawErrorScreen(sf::RenderWindow& window)
     drawTextCentered(window, "Put level.txt next to main.cpp", 380.f, 18, COLOR_TEXT);
     drawTextCentered(window, "and run the game again.", 405.f, 18, COLOR_TEXT);
 }
-void drawMenu(sf::RenderWindow& window) { /* Member A, Thursday: paste */ }
+void drawMenu(sf::RenderWindow& window)
+{
+    drawTextCentered(window, "BLOCK BUSTER", 150.f, 52, COLOR_HIGHLIGHT);
+
+    string options[MENU_OPTIONS] = { "New Game", "Continue", "Exit" };
+
+    for (int i = 0; i < MENU_OPTIONS; i++)
+    {
+        float y = 290.f + i * 60.f;
+        if (i == menuChoice)
+            drawTextCentered(window, "> " + options[i] + " <", y, 32, COLOR_HIGHLIGHT);
+        else
+            drawTextCentered(window, options[i], y, 28, COLOR_TEXT);
+    }
+
+    if (showNoSave)
+        drawTextCentered(window, "No saved game", 500.f, 22, COLOR_WARNING);
+
+    drawTextCentered(window, "Up/Down to choose, Enter to select", 630.f, 16, COLOR_TEXT);
+}
 void drawEndScreen(sf::RenderWindow& window) { /* Member A, Friday: paste */ }
 void drawPaddle(sf::RenderWindow& window)
 {
@@ -478,7 +497,8 @@ void launchBall()
     dy = -BALL_SPEED_Y;
     if (rand() % 2 == 0)
     {
-        dx = 3;          // thora right
+        dx = 3
+             ;          // thora right
     }
     else
         dx = -3;          //thora left
