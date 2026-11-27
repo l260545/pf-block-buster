@@ -13,7 +13,7 @@ using namespace std;
 
 // ---------------------------------------------------------------------
 // 1) NAMED CONSTANTS  (Feature 10: no magic numbers)
-//    Values "Game values" table se li hain.
+//    Values "Game values" 
 // ---------------------------------------------------------------------
 const int WINDOW_W = 600;
 const int WINDOW_H = 700;
@@ -90,7 +90,7 @@ const sf::Color BRICK_COLORS[4] = {
 // ---------------------------------------------------------------------
 int bricks[ROWS][COLS];       // level.txt se aati hain
 
-int  gameState = PLAYING;   // TEMPORARY testing ke liye. Thursday ko menu aane pe MENU karo
+int  gameState = MENU;   // TEMPORARY testing ke liye.
 int  menuChoice = OPTION_NEW_GAME;  // menu mein kaunsa option selected hai
 bool showNoSave = false;            // "No saved game" dikhana hai?
 bool levelLoaded = false;            // level.txt mila ya nahi
@@ -134,44 +134,44 @@ void drawTextCentered(sf::RenderWindow& window, const string& message, float y, 
 
 // Drawing + menu (code: sfml_parts_to_paste.cpp)
 void drawBricks(sf::RenderWindow& window);
-void drawErrorScreen(sf::RenderWindow& window); // Member A
-void drawMenu(sf::RenderWindow& window);        // Member A
-void drawEndScreen(sf::RenderWindow& window);   // Member A
-void drawPaddle(sf::RenderWindow& window);      // Member B
-void drawBall(sf::RenderWindow& window);        // Member B
-void drawPowerUp(sf::RenderWindow& window);     // Member B
-void drawHUD(sf::RenderWindow& window);         // Member C
+void drawErrorScreen(sf::RenderWindow& window); 
+void drawMenu(sf::RenderWindow& window);        
+void drawEndScreen(sf::RenderWindow& window);   
+void drawPaddle(sf::RenderWindow& window);      
+void drawBall(sf::RenderWindow& window);        
+void drawPowerUp(sf::RenderWindow& window);     
+void drawHUD(sf::RenderWindow& window);         
 
-// Game logic (team khud likhegi)
-bool loadLevel();                               // Member A
-void startNewGame();                            // Member A
-void updateMenu(sf::RenderWindow& window);      // Member A (paste)
-void updateGameOver();                          // Member A (paste)
-void updatePlaying();                           // Member A (sirf order of calls)
-void movePaddle();                              // Member B
-void resetBallOnPaddle();                       // Member B
-void launchBall();                              // Member B
-void moveBall();                                // Member B
-bool bounceOnPaddle();                          // Member B
-void saveGame();                                // Member B
-bool loadSavedGame();                           // Member B
-void clearSave();                               // Member B
-void tryDropPowerUp(int row, int col);          // Member B (bonus)
-void updatePowerUp();                           // Member B (bonus)
-bool cornerInBrickArea(int cx, int cy);         // Member C
-bool hitBricks();                               // Member C
-void loseLife();                                // Member C
-void checkWinOrLose();                          // Member C
+// Game logic
+bool loadLevel();                               
+void startNewGame();                          
+void updateMenu(sf::RenderWindow& window);      
+void updateGameOver();                          
+void updatePlaying();                           
+void movePaddle();                              
+void resetBallOnPaddle();                    
+void launchBall();                     
+void moveBall();                                
+bool bounceOnPaddle();                        
+void saveGame();                               
+bool loadSavedGame();                          
+void clearSave();                               
+void tryDropPowerUp(int row, int col);          
+void updatePowerUp();                           
+bool cornerInBrickArea(int cx, int cy);         
+bool hitBricks();                               
+void loseLife();                                
+void checkWinOrLose();                          
 
 // =====================================================================
-// 5) MAIN  -  chhota rakho (Feature 10)
+// 5) MAIN  
 // =====================================================================
 int main()
 {
     srand((unsigned)time(0));   // har dafa alag random numbers
 
     sf::RenderWindow window(sf::VideoMode({ (unsigned)WINDOW_W, (unsigned)WINDOW_H }), "Block Buster");
-    window.setFramerateLimit(60);   // har laptop pe same speed
+    window.setFramerateLimit(60);   
 
     fontLoaded = loadFont();
     levelLoaded = loadLevel();      // file nahi mili to error screen dikhegi
@@ -187,7 +187,7 @@ int main()
 }
 
 // =====================================================================
-// 6) SFML PART  -  setup, input, loop (AI se allowed)
+// 6) SFML PART 
 // =====================================================================
 
 // Font load karo. Pehle project folder dekho, phir Windows ka Arial.
@@ -303,7 +303,7 @@ void drawTextCentered(sf::RenderWindow& window, const string& message, float y, 
 }
 
 // =====================================================================
-// 7) DRAWING  -  code "sfml_parts_to_paste.cpp" se apne din pe paste karo
+// 7) DRAWING  
 // =====================================================================
 void drawBricks(sf::RenderWindow& window)
 {
@@ -407,8 +407,7 @@ void drawHUD(sf::RenderWindow& window)
 }
 
 // =====================================================================
-// 8) GAME LOGIC  -  TEAM KHUD LIKHEGI (instructions ka rule)
-//    Har TODO ke steps guide doc mein detail se hain.
+// 8) GAME LOGIC  - 
 // =====================================================================
 
 // ----------------------------- MEMBER A -----------------------------
@@ -499,7 +498,7 @@ void updateGameOver()
 {
     if (pressedKey == KEY_ENTER)
     {
-        clearSave();                    // khatam game continue na ho sake (Feature 8)
+        clearSave();                    // khatam game continue na ho sake 
         menuChoice = OPTION_NEW_GAME;   // menu "New Game" pe khule
         showNoSave = false;
         gameState = MENU;
