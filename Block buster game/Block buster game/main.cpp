@@ -689,7 +689,7 @@ bool hitBricks()
 // Feature 6: ball neeche gir gayi -> ek life kam, ball wapas paddle pe
 void loseLife()
 {
-    // TODO (Member C, Friday)
+   
     lives--; // 1 life kam
     ballLaunched = false; // ball ruk jaye
     dx = 0;
@@ -710,7 +710,7 @@ void loseLife()
 // Feature 6: saari bricks 0 -> YOU WIN; lives 0 -> GAME OVER
 void checkWinOrLose()
 {
- // TODO (Member C, Friday)
+ 
  // 1. Pehle check karo: kya sari bricks toot gayi?
  bool allBricksGone = true;
 for (int r = 0; r < ROWS; r++)
