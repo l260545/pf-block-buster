@@ -690,7 +690,8 @@ bool loadSavedGame()
 // Feature 8: savegame.txt khaali karna (ofstream khol ke band)
 void clearSave()
 {
-    // TODO (Member B, Friday)
+    ofstream fout("savegame.txt");    // kholte hi purana content mit jata hai
+    fout.close();
 }
 
 // Bonus: brick tooti -> 1 in 5 chance power-up gire
