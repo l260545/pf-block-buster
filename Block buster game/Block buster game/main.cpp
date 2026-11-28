@@ -379,7 +379,23 @@ void drawBall(sf::RenderWindow& window)
     ball.setPosition({ (float)ballX, (float)ballY }); // box ka top-left corner
     window.draw(ball);
 }
-void drawPowerUp(sf::RenderWindow& window) { /* Member B, Saturday (bonus): paste */ }
+void drawPowerUp(sf::RenderWindow& window)
+{
+    if (powerUpFalling == false)              // kuch gir nahi raha: kuch draw nahi
+        return;
+
+    sf::RectangleShape box({ (float)POWERUP_W, (float)POWERUP_H });
+    if (powerUpType == 'W')
+        box.setFillColor(COLOR_PADDLE);       // wide = cyan (paddle jaisa)
+    else
+        box.setFillColor(COLOR_LIFE);         // extra life = red (lives jaisa)
+    box.setPosition({ (float)powerUpX, (float)powerUpY });
+    window.draw(box);
+
+    // box ke upar 'W' ya '+' likho
+    string letter(1, powerUpType);            // char ko string banao
+    drawText(window, letter, powerUpX + 7.f, powerUpY - 3.f, 12, COLOR_BACKGROUND);
+}
 void drawHUD(sf::RenderWindow& window)
 {
     // upar ki 50 px strip
@@ -597,7 +613,7 @@ void moveBall()
 }
 
 // Feature 4: paddle se takrayi (sirf neeche jaate hue) -> true
-// Feature 4: paddle se takrayi (sirf neeche jaate hue) -> true
+
 bool bounceOnPaddle()
 {
     if (dy < 0)                       // ball upar ja rahi hai: paddle ignore karo
@@ -697,7 +713,22 @@ void clearSave()
 // Bonus: brick tooti -> 1 in 5 chance power-up gire
 void tryDropPowerUp(int row, int col)
 {
-    // TODO (Member B, Saturday, bonus)
+    if (powerUpFalling == true)               // ek waqt mein sirf ek power-up
+        return;
+
+    if (rand() % POWERUP_CHANCE != 0)         // 4 in 5 dafa kuch nahi girta
+        return;
+
+    powerUpFalling = true;
+
+    // brick ke beech se girna shuru ho
+    powerUpX = col * BRICK_W + (BRICK_W - POWERUP_W) / 2;
+    powerUpY = BRICKS_Y + row * BRICK_H;
+
+    if (rand() % 2 == 0)
+        powerUpType = 'W';                    // wide paddle
+    else
+        powerUpType = '+';                    // extra life
 }
 
 // Bonus: power-up girna, catch karna, wide timer chalana
