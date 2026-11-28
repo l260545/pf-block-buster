@@ -105,7 +105,8 @@ int paddleWidth = PADDLE_W;
 int  ballX = 0, ballY = 0;    // ball ke box ka top-left corner
 int  dx = 0, dy = 0;          // ball ki speed (x aur y mein)
 bool ballLaunched = false;    // false = ball paddle pe ruki hai
-
+const int BALL_SPEED_X = 3;       // dx = 3 ya -3 (left/right speed)
+const int POWERUP_CHANCE = 5;     // 1 in 5 chance power-up gire
 // Bonus power-up
 bool powerUpFalling = false;
 int  powerUpX = 0, powerUpY = 0;
@@ -596,10 +597,36 @@ void moveBall()
 }
 
 // Feature 4: paddle se takrayi (sirf neeche jaate hue) -> true
+// Feature 4: paddle se takrayi (sirf neeche jaate hue) -> true
 bool bounceOnPaddle()
 {
-    // TODO (Member B, Thursday)
-    return false;
+    if (dy < 0)                       // ball upar ja rahi hai: paddle ignore karo
+        return false;
+
+    int ballBottom = ballY + BALL_SIZE;
+
+    // ball ka neeche wala edge paddle ki patti ke andar hai?
+    if (ballBottom < PADDLE_Y || ballBottom > PADDLE_Y + PADDLE_H)
+        return false;
+
+    // ball paddle ke left aur right edge ke beech hai?
+    if (ballX + BALL_SIZE < paddleX || ballX > paddleX + paddleWidth)
+        return false;
+
+    // paddle pe lagi: ball ko paddle ke upar rakho aur upar bhejo
+    ballY = BALL_ON_PADDLE_Y;
+    dy = -BALL_SPEED_Y;
+
+    // paddle ke kis hisse pe lagi?
+    int hitPoint = (ballX + BALL_SIZE / 2) - paddleX;   // 0 se paddleWidth tak
+
+    if (hitPoint < paddleWidth / 3)              // left wala hissa
+        dx = -BALL_SPEED_X;
+    else if (hitPoint > paddleWidth * 2 / 3)     // right wala hissa
+        dx = BALL_SPEED_X;
+    // beech wala hissa: dx same rahega
+
+    return true;
 }
 
 // Feature 8: score, lives aur 8 rows savegame.txt mein
