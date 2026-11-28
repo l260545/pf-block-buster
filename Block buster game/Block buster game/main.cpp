@@ -630,16 +630,61 @@ bool bounceOnPaddle()
 }
 
 // Feature 8: score, lives aur 8 rows savegame.txt mein
+
 void saveGame()
 {
-    // TODO (Member B, Friday)
+    ofstream fout("savegame.txt");
+
+    fout << score << " " << lives << endl;   // pehli line: score aur lives
+
+    for (int r = 0; r < ROWS; r++)            // phir 8 rows bricks ki
+    {
+        for (int c = 0; c < COLS; c++)
+            fout << bricks[r][c] << " ";
+        fout << endl;
+    }
+
+    fout.close();
 }
+
 
 // Feature 8: savegame.txt parhna. Kuch nahi mila -> false
 bool loadSavedGame()
 {
-    // TODO (Member B, Friday)
-    return false;
+    ifstream fin("savegame.txt");
+    if (!fin)                         // file hi nahi hai
+        return false;
+
+    int savedScore = 0, savedLives = 0;
+    fin >> savedScore >> savedLives;
+
+    if (fin.fail() || savedLives <= 0)    // file khaali hai (clearSave ke baad)
+    {
+        fin.close();
+        return false;
+    }
+
+    score = savedScore;
+    lives = savedLives;
+
+    for (int r = 0; r < ROWS; r++)
+    {
+        for (int c = 0; c < COLS; c++)
+            fin >> bricks[r][c];
+    }
+    fin.close();
+
+    // baqi cheezein fresh: normal paddle, ball paddle pe
+    paddleX = PADDLE_START_X;
+    paddleWidth = PADDLE_W;
+    wideTimer = 0;
+    powerUpFalling = false;
+    ballLaunched = false;
+    dx = 0;
+    dy = 0;
+    resetBallOnPaddle();
+
+    return true;
 }
 
 // Feature 8: savegame.txt khaali karna (ofstream khol ke band)
