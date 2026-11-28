@@ -191,7 +191,7 @@ int main()
 // 6) SFML PART 
 // =====================================================================
 
-// Font load karo. Pehle project folder dekho, phir Windows ka Arial.
+// Font load karo
 bool loadFont()
 {
     if (font.openFromFile("arial.ttf"))

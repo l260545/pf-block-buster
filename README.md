@@ -24,8 +24,8 @@ A brick breaker game in C++ with SFML 3 (PF Mini Project).
 ## How to run
 
 1. Install Visual Studio 2022 with "Desktop development with C++".
-2. Download SFML 3 (Visual C++ 17 (2022), 64-bit) and extract it to `C:\SFML`.
-3. Open `BlockBuster.slnx` (or `.sln`) in Visual Studio.
+2. Download SFML 3 (Visual C++ 17 (2022), 64-bit) and extract it to `D:\SFML`.
+3. Open `Block buster game.slnx` (or `.sln`) in Visual Studio.
 4. Choose **Debug** and **x64** at the top, then press **F5**.
 5. `level.txt` must be in the same folder as `main.cpp`.
 
