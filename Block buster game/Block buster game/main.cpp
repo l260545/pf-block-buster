@@ -734,7 +734,43 @@ void tryDropPowerUp(int row, int col)
 // Bonus: power-up girna, catch karna, wide timer chalana
 void updatePowerUp()
 {
-    // TODO (Member B, Saturday, bonus)
+    // 1. Wide paddle ka timer
+    if (wideTimer > 0)
+    {
+        wideTimer--;
+        if (wideTimer == 0)
+            paddleWidth = PADDLE_W;           // 10 second khatam: normal paddle
+    }
+
+    // 2. Koi power-up gir raha hai?
+    if (powerUpFalling == false)
+        return;
+
+    powerUpY += POWERUP_SPEED;                // 3 px neeche
+
+    // 3. Paddle ne pakra?
+    bool touchY = (powerUpY + POWERUP_H >= PADDLE_Y && powerUpY <= PADDLE_Y + PADDLE_H);
+    bool touchX = (powerUpX + POWERUP_W >= paddleX && powerUpX <= paddleX + paddleWidth);
+
+    if (touchY == true && touchX == true)
+    {
+        if (powerUpType == 'W')
+        {
+            paddleWidth = PADDLE_WIDE_W;
+            wideTimer = WIDE_FRAMES;
+            if (paddleX + paddleWidth > WINDOW_W)     // paddle ko window ke andar rakho
+                paddleX = WINDOW_W - paddleWidth;
+        }
+        else
+        {
+            lives++;                          // '+' = extra life
+        }
+        powerUpFalling = false;
+    }
+    else if (powerUpY > WINDOW_H)             // neeche gir gaya, pakra nahi
+    {
+        powerUpFalling = false;
+    }
 }
 
 // ----------------------------- MEMBER C -----------------------------
