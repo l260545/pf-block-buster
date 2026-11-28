@@ -31,5 +31,5 @@ A brick breaker game in C++ with SFML 3 (PF Mini Project).
 
 ## Screenshot
 
-![Block Buster gameplay](screenshot.png)
+![Block Buster gameplay](Screenshot.png)
 
